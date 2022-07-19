@@ -1,3 +1,4 @@
+
 async function load() {
   // The user clicked our button, get the active tab in the current window using
   // the tabs API.
@@ -36,7 +37,13 @@ async function load() {
                                }
             };
 
+
+
+  for (const [key, value] of Object.entries(matches)) {
+  body['threatInfo']['threatEntries'].push({"url": value})
+  }
   const response = await fetch("https://safebrowsing.googleapis.com/v4/threatMatches:find?key="+myapikey,
+  //const response = await fetch("http://127.0.0.1:5000/bert_phishing",
                 {
                 method: 'POST', // *GET, POST, PUT, DELETE, etc.
                 mode: 'cors', // no-cors, *cors, same-origin
@@ -48,13 +55,13 @@ async function load() {
                 },
                 redirect: 'follow', // manual, *follow, error
                 referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-                body: body // body data type must match "Content-Type" header
+                body: JSON.stringify(body) // body data type must match "Content-Type" header
                 }
-              );
-
-  document.getElementById("check1").textContent = Object.keys(matches);
-  document.getElementById("check2").textContent = typeof matches;
-  document.getElementById("check3").textContent = Object.keys(response);
+              ).then((response) => response.text());
+  //document.getElementById("check").textContent = raw;
+  //document.getElementById("check1").textContent = matches;
+  //document.getElementById("check2").textContent =  body['threatInfo']['threatEntries'][1]['url'];
+  document.getElementById("malurl").textContent = response;
   //contentType,partName,size,headers,parts  ;;Object.keys(full.parts)
 }
 
