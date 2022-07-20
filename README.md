@@ -12,6 +12,7 @@ in thunderbird_internal_phishing/blob/main/messagePopup/popup.js extracts email 
 
 
 Malicious url detection:- 
+
 Code will first collect all urls in the email body and run a google safe browsing lookup api to find any malicious urls.
 
 
