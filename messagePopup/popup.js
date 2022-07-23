@@ -1,3 +1,4 @@
+
 async function load() {
   // The user clicked our button, get the active tab in the current window using
   // the tabs API.
@@ -15,8 +16,53 @@ async function load() {
   
   // Request the full message to access its full set of headers.
   let full = await messenger.messages.getFull(message.id);
-  //document.getElementById("received").textContent = full.headers.received[0];
+  let raw = await messenger.messages.getRaw(message.id);
+  let urlRegex =/(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+  let matches = raw.match(urlRegex);
+
   document.getElementById("received").textContent = full.headers.received;
+  let myapikey ='AAAAAAAaaaaaaaBBBBBbbbb';
+  let body = {
+                "client": {
+                                "clientId": "testing",
+                                "clientVersion": "0.0.1"
+                          },
+                "threatInfo": {
+                                "threatTypes": ["MALWARE","SOCIAL_ENGINEERING","UNWANTED_SOFTWARE","MALICIOUS_BINARY"],
+                                "platformTypes": ["ANY_PLATFORM"],
+                                "threatEntryTypes": ["URL"],
+                                "threatEntries": [
+                                                    {"url": "https://testsafebrowsing.appspot.com/s/malware.html"}
+                                                 ]
+                               }
+            };
+
+
+
+  for (const [key, value] of Object.entries(matches)) {
+  body['threatInfo']['threatEntries'].push({"url": value})
+  }
+  const response = await fetch("https://safebrowsing.googleapis.com/v4/threatMatches:find?key="+myapikey,
+  //const response = await fetch("http://127.0.0.1:5000/bert_phishing",
+                {
+                method: 'POST', // *GET, POST, PUT, DELETE, etc.
+                mode: 'cors', // no-cors, *cors, same-origin
+                cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+                credentials: 'same-origin', // include, *same-origin, omit
+                headers: {
+                  'Content-Type': 'application/json'
+                  //'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                redirect: 'follow', // manual, *follow, error
+                referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+                body: JSON.stringify(body) // body data type must match "Content-Type" header
+                }
+              ).then((response) => response.text());
+  //document.getElementById("check").textContent = raw;
+  //document.getElementById("check1").textContent = matches;
+  //document.getElementById("check2").textContent =  body['threatInfo']['threatEntries'][1]['url'];
+  document.getElementById("malurl").textContent = response;
+  //contentType,partName,size,headers,parts  ;;Object.keys(full.parts)
 }
 
 document.addEventListener("DOMContentLoaded", load);
