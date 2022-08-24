@@ -1,4 +1,4 @@
-
+console.log(body['threatInfo']['threatEntries'])
 async function load() {
   // The user clicked our button, get the active tab in the current window using
   // the tabs API.
@@ -9,11 +9,27 @@ async function load() {
   // The returned message is a MessageHeader object with the most relevant
   // information.
   let message = await messenger.messageDisplay.getDisplayedMessage(tabs[0].id);
+  //let message2 = await messenger.messageDisplay.getDisplayedMessage(tabs[0]);
+
+  //console.log('Checking message id');
+  //console.log(tabs[0]);
+  //console.log(tabs[0].id);
+  //console.log(messenger.accounts.list());
+  //const var_check = await messenger.accounts.list();
+  //console.log('Var check');
+  //console.log(var_check);
+  //console.log(var_check[0]['folders'][25]);
+  //await messenger.messages.move([message.id], var_check[0]['folders'][25]);
+  //await messenger.messages.update(message.id,{'junk':true});
+  //await messenger.messages.archive([message.id]);
+
+
+
 
   // Update the HTML fields with the message subject and sender.
   document.getElementById("subject").textContent = message.subject;
   document.getElementById("from").textContent = message.author;
-  
+
   // Request the full message to access its full set of headers.
   let full = await messenger.messages.getFull(message.id);
   let raw = await messenger.messages.getRaw(message.id);
@@ -21,7 +37,7 @@ async function load() {
   let matches = raw.match(urlRegex);
 
   document.getElementById("received").textContent = full.headers.received;
-  let myapikey ='AAAAAAAaaaaaaaBBBBBbbbb';
+  let myapikey ='AAAAABBBBBBcccccAAAnmk';
   let body = {
                 "client": {
                                 "clientId": "testing",
@@ -40,8 +56,9 @@ async function load() {
 
 
   for (const [key, value] of Object.entries(matches)) {
-  body['threatInfo']['threatEntries'].push({"url": value})
+  body['threatInfo']['threatEntries'].push({"url": value});
   }
+  console.log(body['threatInfo']['threatEntries']);
   const response = await fetch("https://safebrowsing.googleapis.com/v4/threatMatches:find?key="+myapikey,
   //const response = await fetch("http://127.0.0.1:5000/bert_phishing",
                 {
@@ -58,11 +75,20 @@ async function load() {
                 body: JSON.stringify(body) // body data type must match "Content-Type" header
                 }
               ).then((response) => response.text());
+
   //document.getElementById("check").textContent = raw;
   //document.getElementById("check1").textContent = matches;
   //document.getElementById("check2").textContent =  body['threatInfo']['threatEntries'][1]['url'];
   document.getElementById("malurl").textContent = response;
   //contentType,partName,size,headers,parts  ;;Object.keys(full.parts)
+
+  console.log(JSON.parse(response)['matches'].length);
+
+  if (JSON.parse(response)['matches'].length > 1) {
+  await messenger.messages.update(message.id,{'junk':true});
+  await messenger.messages.move([message.id], { 'accountId': "account1", 'name': "thunderbrid", 'path': "/thunderbrid", 'subFolders': []});
+  }
+
 }
 
 document.addEventListener("DOMContentLoaded", load);
