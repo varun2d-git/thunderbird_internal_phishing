@@ -21,8 +21,14 @@
         "default_icon": "images/internet-32px.png"
     },
     "permissions": [
-        "messagesRead"
+        "messagesRead",
+        "<all_urls>",
+        "messagesMove",
+        "accountsRead"
     ],
+    "background": {
+        "page": "background.html"
+    },
     "icons": {
         "64": "images/internet.png",
         "32": "images/internet-32px.png",
