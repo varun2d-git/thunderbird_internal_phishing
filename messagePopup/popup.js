@@ -1,4 +1,4 @@
-console.log(body['threatInfo']['threatEntries'])
+
 async function load() {
   // The user clicked our button, get the active tab in the current window using
   // the tabs API.
@@ -14,10 +14,10 @@ async function load() {
   //console.log('Checking message id');
   //console.log(tabs[0]);
   //console.log(tabs[0].id);
-  //console.log(messenger.accounts.list());
-  //const var_check = await messenger.accounts.list();
+  console.log(messenger.accounts.list());
+  const var_check = await messenger.accounts.list();
   //console.log('Var check');
-  //console.log(var_check);
+  console.log(var_check);
   //console.log(var_check[0]['folders'][25]);
   //await messenger.messages.move([message.id], var_check[0]['folders'][25]);
   //await messenger.messages.update(message.id,{'junk':true});
@@ -37,7 +37,28 @@ async function load() {
   let matches = raw.match(urlRegex);
 
   document.getElementById("received").textContent = full.headers.received;
-  let myapikey ='AAAAABBBBBBcccccAAAnmk';
+  //console.log('checking type of header variable');
+  //console.log(typeof full.headers);
+  //console.log(Object.keys(full.headers));
+
+
+  console.log(full.headers['arc-authentication-results'][0].includes('spf=pass'));
+  console.log("arc-authentication-results" in full.headers);
+  let auth = "arc-authentication-results" in full.headers;
+  let spf;
+  let dkim;
+  let dmarc;
+  let spoofed;
+  if ( auth == true) {
+  console.log('inside auth flag creation loop');
+  console.log(typeof full.headers['arc-authentication-results'][0].includes('spf=pass'));
+  spf = full.headers['arc-authentication-results'][0].includes('spf=pass');
+  dkim = full.headers['arc-authentication-results'][0].includes('dkim=pass');
+  dmarc = full.headers['arc-authentication-results'][0].includes('dmarc=pass');
+  spoofed = full.headers['arc-authentication-results'][0].includes('does not designate');
+  }
+
+  let myapikey ='AAABBBBccccccddddddaaaaa';
   let body = {
                 "client": {
                                 "clientId": "testing",
@@ -54,10 +75,14 @@ async function load() {
             };
 
 
+  if (matches !== null) {
 
-  for (const [key, value] of Object.entries(matches)) {
-  body['threatInfo']['threatEntries'].push({"url": value});
+        for (const [key, value] of Object.entries(matches)) {
+            body['threatInfo']['threatEntries'].push({"url": value});
+        }
+
   }
+
   console.log(body['threatInfo']['threatEntries']);
   const response = await fetch("https://safebrowsing.googleapis.com/v4/threatMatches:find?key="+myapikey,
   //const response = await fetch("http://127.0.0.1:5000/bert_phishing",
@@ -86,9 +111,16 @@ async function load() {
 
   if (JSON.parse(response)['matches'].length > 1) {
   await messenger.messages.update(message.id,{'junk':true});
-  await messenger.messages.move([message.id], { 'accountId': "account1", 'name': "thunderbrid", 'path': "/thunderbrid", 'subFolders': []});
+  await messenger.messages.move([message.id], { 'accountId': "account3", 'name': "Junk", 'path': "/Junk", 'subFolders': []});
   }
 
+  if (auth == true) {
+  if ((spf == false) || (dkim == false) || (dmarc == false) || (spoofed == true)) {
+  console.log('inside auth loop');
+  await messenger.messages.update(message.id,{'junk':true});
+  await messenger.messages.move([message.id], { 'accountId': "account3", 'name': "Junk", 'path': "/Junk", 'subFolders': []});
+        }
+  }
 }
 
 document.addEventListener("DOMContentLoaded", load);
