@@ -12,7 +12,7 @@ messenger.messages.onNewMailReceived.addListener(async (folder, messages) => {
     let urlRegex =/(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
     let matches = raw.match(urlRegex);
 
-    let myapikey ='AIzaSyAkrypLif_7OBCiM5yNOukVjVItQ7zD2So';
+    let myapikey ='AAAAbbbbbCCCCdddd';
 
     let auth = "arc-authentication-results" in full.headers;
     let spf;
