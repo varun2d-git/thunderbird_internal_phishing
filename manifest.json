@@ -1,7 +1,7 @@
 {
     "manifest_version": 2,
-    "name": "Hello World",
-    "description": "Your basic Hello World extension!",
+    "name": "Email Phishing",
+    "description": "Your email phishing detection extension!",
     "version": "1.0",
     "author": "Group 4,Cohort 5",
     "applications": {
@@ -12,7 +12,7 @@
     },
     "browser_action": {
         "default_popup": "mainPopup/popup.html",
-        "default_title": "Hello World",
+        "default_title": "Email Phishing",
         "default_icon": "images/internet-32px.png"
     },
     "message_display_action": {
@@ -24,7 +24,8 @@
         "messagesRead",
         "<all_urls>",
         "messagesMove",
-        "accountsRead"
+        "accountsRead",
+        "storage"
     ],
     "background": {
         "page": "background.html"
