@@ -4,27 +4,33 @@ messenger.messages.onNewMailReceived.addListener(async (folder, messages) => {
     // Do something with folder and messages.
     //folder.name
     //message
-    console.log('checking values point 1');
-    console.log(Object.keys(messages.messages));
-    console.log(messages.messages[0]);
+    //console.log('checking values point 1');
+    //console.log(Object.keys(messages.messages));
+    //console.log(messages.messages[0]);
     let full = await messenger.messages.getFull(messages.messages[0].id);
     let raw = await messenger.messages.getRaw(messages.messages[0].id);
     let urlRegex =/(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
     let matches = raw.match(urlRegex);
 
-    let myapikey ='AAAAbbbbbCCCCdddd';
+    let myapikey ='ABCDabcdabcdABCD';
 
     let auth = "arc-authentication-results" in full.headers;
     let spf;
     let dkim;
     let dmarc;
     let spoofed;
+    let detection = 'None';
     if ( auth == true) {
+    console.log('Extracting authentication results from email header');
 
     spf = full.headers['arc-authentication-results'][0].includes('spf=pass');
     dkim = full.headers['arc-authentication-results'][0].includes('dkim=pass');
     dmarc = full.headers['arc-authentication-results'][0].includes('dmarc=pass');
     spoofed = full.headers['arc-authentication-results'][0].includes('does not designate');
+    if (spf == true) {console.log('SPF check: Pass');} else {console.log('SPF check: Fail')};
+    if (dkim == true) {console.log('dkim check: Pass');} else {console.log('dkim check: Fail')};
+    if (dmarc == true) {console.log('dmarc check: Pass');} else {console.log('dmarc check: Fail')};
+    if (spoofed == false) {console.log('spoofed check: Pass');} else {console.log('spoofed check: Fail')};
 
     }
 
@@ -70,19 +76,39 @@ messenger.messages.onNewMailReceived.addListener(async (folder, messages) => {
   console.log(JSON.parse(response)['matches'].length);
 
   if (JSON.parse(response)['matches'].length > 1) {
-  console.log('Inside move message loop');
+  console.log('Malicious url detected');
+  console.log(response);
+
+  detection = 'Malicious url, '+ response;
+  //console.log(detection);
   await messenger.messages.update(messages.messages[0].id,{'junk':true});
-  await messenger.messages.move([messages.messages[0].id], { 'accountId': "account3", 'name': "Junk", 'path': "/Junk", 'subFolders': []});
+  await messenger.messages.move([messages.messages[0].id], { 'accountId': "account4", 'name': "Junk", 'path': "/Junk", 'subFolders': []});
   };
 
   if (auth == true) {
   if ((spf == false) || (dkim == false) || (dmarc == false) || (spoofed == true)) {
-  console.log('inside auth loop');
+  console.log('SPF / DKIM / DMACR / SPOOFED flag detected');
+  console.log(full.headers['arc-authentication-results']);
+  console.log(typeof full.headers['arc-authentication-results']);
+  detection = 'Email header fail,' + full.headers['arc-authentication-results'].toString();
   await messenger.messages.update(messages.messages[0].id,{'junk':true});
-  await messenger.messages.move([messages.messages[0].id], { 'accountId': "account3", 'name': "Junk", 'path': "/Junk", 'subFolders': []});
+  await messenger.messages.move([messages.messages[0].id], { 'accountId': "account4", 'name': "Junk", 'path': "/Junk", 'subFolders': []});
+  
         }
   };
-  console.log('checking values point 2');
+
+
+  console.log('Into message logging');
+  let { messageLog } = await messenger.storage.local.get({ messageLog: [] });
+  console.log(messageLog);
+  messageLog.push({
+                time: Date.now(),
+                detection: detection
+            });
+  await messenger.storage.local.set({ messageLog });
+  
+
+  console.log('Analysis completed!');
 
 })
 
